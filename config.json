@@ -112,7 +112,9 @@
           "telegram",
           "twitter",
           "bilibili",
-          "apple"
+          "apple",
+          "wechat",
+          "whatsapp"
         ]
       }
     },
@@ -161,7 +163,9 @@
           "telegram",
           "twitter",
           "bilibili",
-          "apple"
+          "apple",
+          "wechat",
+          "whatsapp"
         ]
       }
     },
