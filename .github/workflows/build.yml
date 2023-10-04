@@ -25,7 +25,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version-file: ./go.mod
+          go-version: '>=1.20'
 
       - name: Set variables
         run: |
@@ -80,6 +80,19 @@ jobs:
             $(go env GOPATH)/bin/mmdbverify -file ${name}
           done
 
+      - name: Build Sing-box and Clash.Meta Database
+        env:
+          NO_SKIP: true
+        run: |
+          mkdir -p ./output/meta
+          go install -trimpath -ldflags="-s -w -buildid=" github.com/metacubex/geo/cmd/geo@master
+          geo convert ip -i v2ray -o sing -f ./output/meta/geoip.db ./output/dat/geoip.dat
+          geo convert ip -i v2ray -o meta -f ./output/meta/geoip.metadb ./output/dat/geoip.dat
+          geo convert ip -i v2ray -o sing -f ./output/meta/geoip-mini.db ./output/dat/geoip-mini.dat
+          geo convert ip -i v2ray -o meta -f ./output/meta/geoip-mini.metadb ./output/dat/geoip-mini.dat
+          geo convert ip -i v2ray -o sing -f ./output/meta/geoip-only-cn-private.db ./output/dat/geoip-only-cn-private.dat
+          geo convert ip -i v2ray -o meta -f ./output/meta/geoip-only-cn-private.metadb ./output/dat/geoip-only-cn-private.dat
+
       - name: Generate sha256 checksum for dat files
         run: |
           cd ./output/dat || exit 1
@@ -93,11 +106,20 @@ jobs:
           for name in $(ls *.mmdb); do
             sha256sum ${name} > ./${name}.sha256sum
           done
+      - name: Generate sha256 checksum for db & metadb files
+        run: |
+          cd ./output/meta || exit 1
+          for name in $(ls *.db); do
+            sha256sum ${name} > ./${name}.sha256sum
+          done
+          for name in $(ls *.metadb); do
+            sha256sum ${name} > ./${name}.sha256sum
+          done
 
       - name: Move files to publish directory
         run: |
           mkdir -p publish
-          mv ./output/dat/*.dat ./output/dat/*.sha256sum ./output/maxmind/*.mmdb ./output/maxmind/*.sha256sum ./publish/
+          mv ./output/dat/*.dat ./output/dat/*.sha256sum ./output/maxmind/*.mmdb ./output/maxmind/*.sha256sum ./output/meta/*.db ./output/meta/*.metadb ./output/meta/*.sha256sum ./publish/
           cp ./data/cn ./publish/cn.txt
           cp -fpPR ./output/text ./publish
 
