@@ -52,6 +52,8 @@ jobs:
           cat delegated-apnic-latest.list | awk -F '|' '/CN/&&/ipv6/ {print $4 "/" $5}' >> data/cn
           curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/BiliBili/BiliBili_Resolve.list | grep IP-CIDR, | sed 's/IP-CIDR,//g' > data/bilibili
           curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Apple/Apple_Resolve.list | grep IP-CIDR, | sed 's/IP-CIDR,//g' > data/apple
+          curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/WeChat/WeChat_Resolve.list | grep IP-CIDR, | sed 's/IP-CIDR,//g' > data/wechat
+          curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Whatsapp/Whatsapp_Resolve.list | grep IP-CIDR, | sed 's/IP-CIDR,//g' > data/whatsapp
           cat delegated-apnic-latest.list | awk -F '|' '/JP/&&/ipv4/ {print $4 "/" 32-log($5)/log(2)}' > data/jp
           cat delegated-apnic-latest.list | awk -F '|' '/JP/&&/ipv6/ {print $4 "/" $5}' >> data/jp
           cat delegated-apnic-latest.list | awk -F '|' '/TW/&&/ipv4/ {print $4 "/" 32-log($5)/log(2)}' > data/tw

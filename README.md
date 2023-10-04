@@ -23,6 +23,8 @@
   - `geoip:twitter`（`GEOIP,TWITTER`）
   - `geoip:bilibili`（`GEOIP,BILIBILI`）
   - `geoip:apple`（`GEOIP,APPLE`）
+  - `geoip:wechat`（`GEOIP,WECHAT`）
+  - `geoip:whatsapp`（`GEOIP,WHATSAPP`）
 
 ## License
 
