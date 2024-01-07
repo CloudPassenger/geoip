@@ -14,10 +14,7 @@
       "action": "remove",
       "args": {
         "wantedList": [
-          "cn",
-          "jp",
-          "hk",
-          "tw"
+          "cn"
         ]
       }
     },
