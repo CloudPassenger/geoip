@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: '1.20'
 
@@ -48,17 +48,19 @@ jobs:
           curl -sSL https://www.gstatic.com/ipranges/cloud.json | jq --raw-output '.prefixes[].ipv4Prefix,.prefixes[].ipv6Prefix | select(. != null)' >> data/google
           curl -sSL https://api.fastly.com/public-ip-list | jq --raw-output '.addresses[],.ipv6_addresses[]' >> data/fastly
           curl -sSL https://ip-ranges.amazonaws.com/ip-ranges.json | jq --raw-output '.prefixes[],.ipv6_prefixes[] | select(.service == "CLOUDFRONT") | .ip_prefix,.ipv6_prefix' | grep "/" >> data/cloudfront
-          # cat delegated-apnic-latest.list | awk -F '|' '/CN/&&/ipv4/ {print $4 "/" $5}' >> data/cn
-          cat delegated-apnic-latest.list | awk -F '|' '/CN/&&/ipv6/ {print $4 "/" $5}' >> data/cn
+          curl -sSL http://ftp.apnic.net/stats/apnic/delegated-apnic-latest > ip.txt
+          if [ "`cat ip.txt`" = "" ]; then curl -sSL https://raw.githubusercontent.com/CloudPassenger/geoip/release/ip.txt > ip.txt; fi   
+          cat ip.txt | awk -F '|' '/CN/&&/ipv4/ {print $4 "/" 32-log($5)/log(2)}' > data/cn
+          cat ip.txt | awk -F '|' '/CN/&&/ipv6/ {print $4 "/" $5}' >> data/cn
           curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/BiliBili/BiliBili_Resolve.list | grep IP-CIDR, | sed 's/IP-CIDR,//g' > data/bilibili
           curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Apple/Apple_Resolve.list | grep IP-CIDR, | sed 's/IP-CIDR,//g' > data/apple
           curl -sSL https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Whatsapp/Whatsapp_Resolve.list | grep IP-CIDR, | sed 's/IP-CIDR,//g' > data/whatsapp
-          cat delegated-apnic-latest.list | awk -F '|' '/JP/&&/ipv4/ {print $4 "/" 32-log($5)/log(2)}' > data/jp
-          cat delegated-apnic-latest.list | awk -F '|' '/JP/&&/ipv6/ {print $4 "/" $5}' >> data/jp
-          cat delegated-apnic-latest.list | awk -F '|' '/TW/&&/ipv4/ {print $4 "/" 32-log($5)/log(2)}' > data/tw
-          cat delegated-apnic-latest.list | awk -F '|' '/TW/&&/ipv6/ {print $4 "/" $5}' >> data/tw
-          cat delegated-apnic-latest.list | awk -F '|' '/HK/&&/ipv4/ {print $4 "/" 32-log($5)/log(2)}' > data/hk
-          cat delegated-apnic-latest.list | awk -F '|' '/HK/&&/ipv6/ {print $4 "/" $5}' >> data/hk
+          cat ip.txt | awk -F '|' '/JP/&&/ipv4/ {print $4 "/" 32-log($5)/log(2)}' > data/jp
+          cat ip.txt | awk -F '|' '/JP/&&/ipv6/ {print $4 "/" $5}' >> data/jp
+          cat ip.txt | awk -F '|' '/TW/&&/ipv4/ {print $4 "/" 32-log($5)/log(2)}' > data/tw
+          cat ip.txt | awk -F '|' '/TW/&&/ipv6/ {print $4 "/" $5}' >> data/tw
+          cat ip.txt | awk -F '|' '/HK/&&/ipv4/ {print $4 "/" 32-log($5)/log(2)}' > data/hk
+          cat ip.txt | awk -F '|' '/HK/&&/ipv6/ {print $4 "/" $5}' >> data/hk
       
       - name: Get GeoLite2
         env:
@@ -120,8 +122,9 @@ jobs:
       - name: Move files to publish directory
         run: |
           mkdir -p publish
-          mv ./output/dat/*.dat ./output/dat/*.sha256sum ./output/maxmind/*.mmdb ./output/maxmind/*.sha256sum ./output/meta/*.db ./output/meta/*.metadb ./output/meta/*.sha256sum ./publish/
+          mv ./output/dat/*.dat ./output/dat/*.sha256sum ./output/maxmind/*.mmdb ./output/maxmind/*.sha256sum ./publish/
           cp ./data/cn ./publish/cn.txt
+          cp ./ip.txt ./publish/ip.txt
           cp -fpPR ./output/text ./publish
 
       - name: Git push assets to "release" branch
